@@ -4,6 +4,7 @@ import {
   json,
   max,
   min,
+  mouse,
   range,
   select,
   scaleTime,
@@ -74,6 +75,10 @@ function visualize({ baseTemperature, monthlyVariance }) {
 
   const heatmap = svg.append('g')
     .attr('transform', `translate(${margins.left}, ${margins.top})`);
+
+  const tooltip = select('#heatmap')
+    .append('dl')
+      .attr('class', 'tooltip');
 
   // set ranges and scale the range of data
   const scaleX = scaleTime()
@@ -155,7 +160,25 @@ function visualize({ baseTemperature, monthlyVariance }) {
       .attr('x', d => scaleX(d.date))
       .attr('y', d => scaleY(d.month))
       .attr('width', rectWidth)
-      .attr('height', rectHeight);
+      .attr('height', rectHeight)
+      .on('mouseover', (d) => {
+        const date = `${getMonth(d.month)}, ${d.year}`;
+        const temp = Math.round((baseTemperature + d.variance) * 1e4) / 1e4;
+        const variance = d.variance > 0 ? `+${d.variance}` : d.variance;
+        const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
+        const tooltipY = `calc(${mouse(document.body)[1]}px - 250%)`;
+        const content = `
+          <dt>Date</dt>
+          <dd>${date}</dd>
+          <dt>Temperature</dt>
+          <dd>${temp}˚C</dd>
+          <dt>Difference</dt>
+          <dd>${variance}˚C</dd>
+        `;
+
+        tooltip.html(content)
+          .style('transform', `translate(${tooltipX}, ${tooltipY})`);
+      });
 
   // gradient for the legend
   const scaleTemp = scaleLinear()

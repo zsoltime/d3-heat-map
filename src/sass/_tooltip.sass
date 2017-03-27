@@ -1,25 +1,28 @@
 .tooltip
-  box-shadow: 0 .5rem 1.25rem -.5rem $color-text
-  color: #444
-  left: 40px
+  align-items: center
+  background-color: rgba(crimson, .9)
+  box-shadow: -3px 7px 21px rgba(black, .3)
+  color: $color-text-light
+  display: flex
+  flex-wrap: wrap
+  font-weight: 300
+  justify-content: space-between
+  left: 0
+  margin: 0
   opacity: 0
+  padding: .5rem
   position: absolute
-  top: 10px
-  text-align: center
-  transform: translateY(-100%)
-  transition: all 75ms ease-in-out
-  width: 200px
+  top: 0
+  width: 160px
 
-  &__header
-    background-color: rgba(0, 128, 0, .9)
-    color: #eee
-    display: flex
-    justify-content: space-between
+dd, dt
+  border-bottom: 1px solid rgba(white, .1)
 
-  &__footer
-    background-color: rgba(black, .7)
-    color: #eee
+dd
+  flex: 1 0 50%
+  margin: 0
 
-  p
-    margin: 0
-    padding: .5em
+dt
+  flex: 1 0 38%
+  margin-right: 1rem
+  text-align: right
