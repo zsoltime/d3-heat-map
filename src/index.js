@@ -1,22 +1,36 @@
-import * as d3 from 'd3';
+import {
+  axisBottom,
+  axisLeft,
+  json,
+  max,
+  min,
+  range,
+  select,
+  scaleTime,
+  scaleLinear,
+  timeFormat
+} from 'd3';
 import 'styles';
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
-const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const getMonth = num => months[num - 1];
+
+const getMonth = (num) => {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  return months[num - 1];
+};
 
 function visualize({ baseTemperature, monthlyVariance }) {
   const margins = {
@@ -25,8 +39,8 @@ function visualize({ baseTemperature, monthlyVariance }) {
     bottom: 80,
     left: 60,
   };
-  const canvasWidth = window.innerWidth * 0.8;
-  const canvasHeight = window.innerHeight * 0.8;
+  const canvasWidth = window.innerWidth * 0.9;
+  const canvasHeight = window.innerHeight * 0.75;
   const width = canvasWidth - margins.right - margins.left;
   const height = canvasHeight - margins.top - margins.bottom;
   const colors = [
@@ -45,13 +59,13 @@ function visualize({ baseTemperature, monthlyVariance }) {
     date: new Date(d.year, d.month - 1),
     monthName: getMonth(d.month),
   })));
-  const rectHeight = Math.floor(height / 12);
+  // tood: should not use magic numbers (-3)
+  const rectHeight = Math.floor(height / 12) - 3;
   const rectWidth = Math.floor(width / (
-    d3.max(data, d => d.year) - d3.min(data, d => d.year)
+    max(data, d => d.year) - min(data, d => d.year)
   ));
 
-  // create svg canvas
-  const svg = d3.select('#heatmap')
+  const svg = select('#heatmap')
     .append('svg')
       .attr('class', 'heatmap')
       .attr('width', canvasWidth)
@@ -62,36 +76,43 @@ function visualize({ baseTemperature, monthlyVariance }) {
     .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
   // set ranges and scale the range of data
-  const scaleX = d3.scaleTime()
+  const scaleX = scaleTime()
     .domain([
-      d3.min(data, d => d.date),
-      d3.max(data, d => d.date),
+      min(data, d => d.date),
+      max(data, d => d.date),
     ])
     .rangeRound([0, width]);
-  const scaleY = d3.scaleLinear()
+  const scaleY = scaleLinear()
     .domain([
-      d3.min(data, d => d.month),
-      d3.max(data, d => d.month),
+      min(data, d => d.month),
+      max(data, d => d.month),
     ])
-    .rangeRound([height - rectHeight, rectHeight]);
+    .rangeRound([
+      height - rectHeight,
+      rectHeight,
+    ]);
 
-  // const scaleColor = d3.scaleQuantile()
-  //   .domain([0, colors.length, d3.max(data, d => baseTemperature + d.variance)])
+  // const scaleColor = scaleQuantile()
+  //   .domain([0, colors.length, max(data, d => baseTemperature + d.variance)])
   //   .range(colors);
 
-  const scaleColor = d3.scaleLinear()
+  const scaleColor = scaleLinear()
     .domain([
-      d3.min(data, d => baseTemperature + d.variance),
+      min(data, d => baseTemperature + d.variance),
       baseTemperature,
-      d3.max(data, d => baseTemperature + d.variance),
+      max(data, d => baseTemperature + d.variance),
     ])
-    .range([colors[0], colors[Math.floor(colors.length / 2)], colors[colors.length - 1]]);
+    .range([
+      colors[0],
+      colors[Math.floor(colors.length / 2)],
+      colors[colors.length - 1],
+    ]);
 
   // define axes
-  const axisX = d3.axisBottom(scaleX)
+  const axisX = axisBottom(scaleX)
     .ticks(12)
-    .tickFormat(d3.timeFormat('%Y'));
-  const axisY = d3.axisLeft(scaleY)
+    .tickFormat(timeFormat('%Y'));
+  const axisY = axisLeft(scaleY)
     .tickPadding(5)
     .tickFormat(d => getMonth(d));
 
@@ -105,7 +126,7 @@ function visualize({ baseTemperature, monthlyVariance }) {
       .attr('transform', `translate(${width}, 6)`)
       .attr('dy', '1em')
       .attr('text-anchor', 'end')
-      .style('opacity', '0.5')
+      .style('opacity', 0.5)
       .text('Year');
 
   // add y axis
@@ -118,12 +139,11 @@ function visualize({ baseTemperature, monthlyVariance }) {
 
   y.append('text')
     .attr('class', 'heatmap__label')
+    .attr('transform', 'translate(-12, 0)')
     .attr('y', 25)
-    .style('transform', 'translateX(-10px)')
-    .style('opacity', '0.5')
+    .style('opacity', 0.5)
     .text('Month');
 
-  // add bars(?), I wish I knew their name :)
   heatmap.append('g')
     .attr('class', 'heatmap__bars')
     .selectAll('.heatmap__bar')
@@ -138,47 +158,48 @@ function visualize({ baseTemperature, monthlyVariance }) {
       .attr('height', rectHeight);
 
   // gradient for the legend
-  const scaleTemp = d3.scaleLinear()
-    .domain([0, d3.max(data, d => baseTemperature + d.variance)])
+  const scaleTemp = scaleLinear()
+    .domain([0, max(data, d => baseTemperature + d.variance)])
     .range(0, width);
 
-  const numberOfStops = 10;
+  const numberOfTicks = window.innerWidth > 700 ? 10 : 5;
   const countRange = scaleTemp.domain();
   countRange[2] = countRange[1] - countRange[0];
   const temperatureStops = [];
 
-  for (let i = 0; i < numberOfStops; i++) {
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < numberOfTicks; i++) {
     temperatureStops.push(
-      ((i * countRange[2]) / (numberOfStops - 1)) + countRange[0]
+      ((i * countRange[2]) / (numberOfTicks - 1)) + countRange[0]
     );
   }
 
   svg.append('defs')
     .append('linearGradient')
-    .attr('id', 'temp')
-    .attr('x1', '0%')
-    .attr('y1', '0%')
-    .attr('x2', '100%')
-    .attr('y2', '0%')
+    .attr('id', 'gradient-temp')
+    .attr('x1', 0)
+    .attr('y1', 0)
+    .attr('x2', 1)
+    .attr('y2', 0)
     .selectAll('stop')
-    .data(d3.range(numberOfStops))
+    .data(range(numberOfTicks))
     .enter()
     .append('stop')
-    .attr('offset', (d, i) => `${(i * 100) / numberOfStops}%`)
-    .attr('stop-color', (d, i) => scaleColor(temperatureStops[i]));
+      .attr('offset', (d, i) => `${(i * 100) / numberOfTicks}%`)
+      .attr('stop-color', (d, i) => scaleColor(temperatureStops[i]));
 
   // draw the legend
-  const legendWidth = width * 0.5;
+  const legendWidth = window.innerWidth > 700 ? width * 0.5 : width * 0.8;
 
   const legends = svg.append('g')
-    .attr('transform', `translate(${width / 2}, ${canvasHeight - 20})`);
+    .attr('transform', `translate(${(width / 2) + margins.left}, ${canvasHeight - 20})`);
 
   legends.append('rect')
     .attr('x', -legendWidth / 2)
     .attr('y', 0)
     .attr('width', legendWidth)
     .attr('height', 10)
-    .style('fill', 'url(#temp)');
+    .style('fill', 'url(#gradient-temp)');
 
   legends.append('text')
     .attr('x', 0)
@@ -186,24 +207,22 @@ function visualize({ baseTemperature, monthlyVariance }) {
     .style('text-anchor', 'middle')
     .text('Temperature in ˚C');
 
-  const legendPosX = i => (i * (legendWidth / numberOfStops)) +
+  const legendPosX = i => (i * (legendWidth / numberOfTicks)) +
     (-legendWidth / 2) +
-    ((legendWidth * 0.3) / numberOfStops);
+    ((legendWidth * 0.3) / numberOfTicks);
 
   legends.append('g')
     .selectAll('.temp')
-    .data(d3.range(numberOfStops))
+    .data(range(numberOfTicks))
     .enter()
     .append('text')
-    .attr('class', 'temp')
-    .attr('x', (d, i) => (
-      `${legendPosX(i)}`)
-    )
-    .attr('y', '20')
-    .text((d, i) => `${Math.round(temperatureStops[i])}˚C`);
+      .attr('class', 'temp')
+      .attr('x', (d, i) => `${legendPosX(i)}`)
+      .attr('y', '20')
+      .text((d, i) => `${Math.round(temperatureStops[i])}˚C`);
 }
 
-d3.json(url, (err, data) => {
+json(url, (err, data) => {
   if (err) throw err;
   visualize(data);
 });

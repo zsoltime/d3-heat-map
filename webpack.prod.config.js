@@ -28,6 +28,12 @@ const UglifyJSPluginConfig = new webpack.optimize.UglifyJsPlugin({
   comments: false,
 });
 
+const EnvironmentConfig = new webpack.DefinePlugin({
+  'process.env': {
+    NODE_ENV: JSON.stringify('production'),
+  },
+});
+
 const config = {
   entry: './src/index.js',
   output: {
@@ -45,7 +51,7 @@ const config = {
   },
   module: {
     rules: [{
-      test: /\.js?/,
+      test: /\.js?$/,
       loaders: [
         'babel-loader',
       ],
@@ -66,6 +72,7 @@ const config = {
     }],
   },
   plugins: [
+    EnvironmentConfig,
     LoaderOptionsPluginConfig,
     HtmlWebpackPluginConfig,
     ExtractTextPluginConfig,

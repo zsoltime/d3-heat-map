@@ -8,7 +8,7 @@ const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
   filename: 'index.html',
   inject: 'body',
 });
-const ExtractTextPluginConfig = new ExtractTextPlugin({
+const ExtractSass = new ExtractTextPlugin({
   filename: 'style.css',
 });
 
@@ -29,7 +29,7 @@ const config = {
   },
   module: {
     rules: [{
-      test: /\.js?/,
+      test: /\.js?$/,
       loaders: [
         'babel-loader',
         'eslint-loader',
@@ -37,7 +37,7 @@ const config = {
       exclude: /node_modules/,
     }, {
       test: /\.sass$/,
-      use: ExtractTextPlugin.extract({
+      use: ExtractSass.extract({
         fallback: 'style-loader',
         use: [{
           loader: 'css-loader',
@@ -60,7 +60,7 @@ const config = {
   },
   plugins: [
     HtmlWebpackPluginConfig,
-    ExtractTextPluginConfig,
+    ExtractSass,
   ],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
