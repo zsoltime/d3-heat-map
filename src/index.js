@@ -4,6 +4,7 @@ import { scaleLinear, scaleTime } from 'd3-scale';
 import { max, min, range } from 'd3-array';
 import { timeFormat } from 'd3-time-format';
 import { json } from 'd3-request';
+import 'd3-transition';
 import 'styles';
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
@@ -159,7 +160,7 @@ function visualize({ baseTemperature, monthlyVariance }) {
         const temp = Math.round((baseTemperature + d.variance) * 1e4) / 1e4;
         const variance = d.variance > 0 ? `+${d.variance}` : d.variance;
         const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
-        const tooltipY = `calc(${mouse(document.body)[1]}px - 250%)`;
+        const tooltipY = `calc(${mouse(document.body)[1]}px - 100%)`;
         const content = `
           <dt>Date</dt>
           <dd>${date}</dd>
@@ -171,6 +172,15 @@ function visualize({ baseTemperature, monthlyVariance }) {
 
         tooltip.html(content)
           .style('transform', `translate(${tooltipX}, ${tooltipY})`);
+
+        tooltip.transition()
+          .duration(200)
+          .style('opacity', 1);
+      })
+      .on('mouseout', () => {
+        tooltip.transition()
+          .duration(100)
+          .style('opacity', 0);
       });
 
   // gradient for the legend
