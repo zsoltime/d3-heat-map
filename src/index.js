@@ -1,16 +1,9 @@
-import {
-  axisBottom,
-  axisLeft,
-  json,
-  max,
-  min,
-  mouse,
-  range,
-  select,
-  scaleTime,
-  scaleLinear,
-  timeFormat
-} from 'd3';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { mouse, select } from 'd3-selection';
+import { scaleLinear, scaleTime } from 'd3-scale';
+import { max, min, range } from 'd3-array';
+import { timeFormat } from 'd3-time-format';
+import { json } from 'd3-request';
 import 'styles';
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
