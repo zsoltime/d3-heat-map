@@ -151,37 +151,48 @@ function visualize({ baseTemperature, monthlyVariance }) {
     .append('rect')
       .attr('class', '.heatmap__bar')
       .attr('fill', d => scaleColor(baseTemperature + d.variance))
-      .attr('x', d => scaleX(d.date))
+      .attr('x', d => scaleX(d.date) - rectWidth)
       .attr('y', d => scaleY(d.month))
       .attr('width', rectWidth)
       .attr('height', rectHeight)
-      .on('mouseover', (d) => {
-        const date = `${getMonth(d.month)}, ${d.year}`;
-        const temp = Math.round((baseTemperature + d.variance) * 1e4) / 1e4;
-        const variance = d.variance > 0 ? `+${d.variance}` : d.variance;
-        const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
-        const tooltipY = `calc(${mouse(document.body)[1]}px - 100%)`;
-        const content = `
-          <dt>Date</dt>
-          <dd>${date}</dd>
-          <dt>Temperature</dt>
-          <dd>${temp}˚C</dd>
-          <dt>Difference</dt>
-          <dd>${variance}˚C</dd>
-        `;
+      .style('opacity', 0)
+      .style('transform', 'scale(0.1)')
+      .style('transform-origin', d => `${scaleX(d.date) + (rectWidth / 2)}px ${scaleY(d.month) + (rectHeight / 2)}px`)
+      .transition()
+      .duration(500)
+      .delay((d, i) => i / 4)
+      .attr('x', d => scaleX(d.date))
+      .style('opacity', 1)
+      .style('transform', 'scale(1)');
 
-        tooltip.html(content)
-          .style('transform', `translate(${tooltipX}, ${tooltipY})`);
+  heatmap.selectAll('rect')
+    .on('mouseover', (d) => {
+      const date = `${getMonth(d.month)}, ${d.year}`;
+      const temp = Math.round((baseTemperature + d.variance) * 1e4) / 1e4;
+      const variance = d.variance > 0 ? `+${d.variance}` : d.variance;
+      const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
+      const tooltipY = `calc(${mouse(document.body)[1]}px - 100%)`;
+      const content = `
+        <dt>Date</dt>
+        <dd>${date}</dd>
+        <dt>Temperature</dt>
+        <dd>${temp}˚C</dd>
+        <dt>Difference</dt>
+        <dd>${variance}˚C</dd>
+      `;
 
-        tooltip.transition()
-          .duration(200)
-          .style('opacity', 1);
-      })
-      .on('mouseout', () => {
-        tooltip.transition()
-          .duration(100)
-          .style('opacity', 0);
-      });
+      tooltip.html(content)
+        .style('transform', `translate(${tooltipX}, ${tooltipY})`);
+
+      tooltip.transition()
+        .duration(200)
+        .style('opacity', 1);
+    })
+    .on('mouseout', () => {
+      tooltip.transition()
+        .duration(100)
+        .style('opacity', 0);
+    });
 
   // gradient for the legend
   const scaleTemp = scaleLinear()
