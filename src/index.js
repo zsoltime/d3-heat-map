@@ -54,8 +54,9 @@ function visualize({ baseTemperature, monthlyVariance }) {
     date: new Date(d.year, d.month - 1),
     monthName: getMonth(d.month),
   })));
-  // tood: should not use magic numbers (-3)
-  const rectHeight = Math.floor(height / 12) - 3;
+  const firstYear = data[0].year;
+  // todo: should not use magic numbers (-2)
+  const rectHeight = Math.floor(height / 12) - 2;
   const rectWidth = Math.floor(width / (
     max(data, d => d.year) - min(data, d => d.year)
   ));
@@ -80,13 +81,13 @@ function visualize({ baseTemperature, monthlyVariance }) {
       min(data, d => d.date),
       max(data, d => d.date),
     ])
-    .rangeRound([0, width]);
+    .range([0, width]);
   const scaleY = scaleLinear()
     .domain([
-      min(data, d => d.month),
       max(data, d => d.month),
+      min(data, d => d.month),
     ])
-    .rangeRound([
+    .range([
       height - rectHeight,
       rectHeight,
     ]);
@@ -161,7 +162,7 @@ function visualize({ baseTemperature, monthlyVariance }) {
       .transition()
       .duration(500)
       .delay((d, i) => i / 4)
-      .attr('x', d => scaleX(d.date))
+      .attr('x', d => (d.year - firstYear) * rectWidth)
       .style('opacity', 1)
       .style('transform', 'scale(1)');
 
